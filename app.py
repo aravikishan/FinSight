@@ -35,7 +35,7 @@ def create_app(testing=False):
         app.config["SQLALCHEMY_DATABASE_URI"] = config.SQLALCHEMY_DATABASE_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Initialize database
+    # Initialize components database
     init_db(app)
 
     # Register blueprints
