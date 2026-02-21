@@ -26,7 +26,7 @@ def create_app(testing=False):
     """
     app = Flask(__name__)
 
-    # Configuration
+    # v1.0.1 - Configuration
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "finsight-dev-key-change-me")
     if testing:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
