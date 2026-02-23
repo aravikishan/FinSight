@@ -65,3 +65,5 @@ if __name__ == "__main__":
     port = int(os.environ.get("FINSIGHT_PORT", 8001))
     debug = os.environ.get("FINSIGHT_DEBUG", "false").lower() == "true"
     app.run(host="0.0.0.0", port=port, debug=debug)
+
+# Module documentation updated
