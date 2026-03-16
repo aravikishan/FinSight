@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ stock.symbol }} - {{ stock.name }}{% endblock %}
+
+{% block content %}
+<div class="stock-detail">
+    <div class="stock-header">
+        <div class="stock-title-group">
+            <h1 class="stock-name">{{ stock.name }}</h1>
+            <span class="stock-ticker">{{ stock.symbol }}</span>
+            <span class="stock-sector-badge">{{ stock.sector }}</span>
+        </div>
+        <div class="stock-price-group">
+            <span class="stock-current-price">${{ "%.2f"|format(stock.current_price) }}</span>
+            <span class="stock-change {% if stock.change_percent() > 0 %}gain{% elif stock.change_percent() < 0 %}loss{% endif %}">
+                {% if stock.change_percent() > 0 %}+{% endif %}{{ stock.change_percent() }}%
+            </span>
+        </div>
+    </div>
+
+    <!-- Stock Stats -->
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-label">Previous Close</span>
+            <span class="stat-value">${{ "%.2f"|format(stock.previous_close) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Day High</span>
+            <span class="stat-value">${{ "%.2f"|format(stock.day_high) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Day Low</span>
+            <span class="stat-value">${{ "%.2f"|format(stock.day_low) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Volume</span>
+            <span class="stat-value">{{ "{:,}".format(stock.volume) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Market Cap</span>
+            <span class="stat-value">${{ "{:,.0f}".format(stock.market_cap) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">P/E Ratio</span>
+            <span class="stat-value">{{ "%.2f"|format(stock.pe_ratio) if stock.pe_ratio else 'N/A' }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">52W High</span>
+            <span class="stat-value">${{ "%.2f"|format(stock.week_52_high) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">52W Low</span>
+            <span class="stat-value">${{ "%.2f"|format(stock.week_52_low) }}</span>
+        </div>
+    </div>
+
+    <!-- Price Chart -->
+    <div class="chart-section">
+        <h2 class="section-title">Price Chart</h2>
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Volume Chart -->
+    <div class="chart-section">
+        <h2 class="section-title">Volume</h2>
+        <div class="chart-container chart-container-sm">
+            <canvas id="volumeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- RSI Chart -->
+    <div class="chart-section">
+        <h2 class="section-title">RSI (14)</h2>
+        <div class="chart-container chart-container-sm">
+            <canvas id="rsiChart"></canvas>
+        </div>
+    </div>
+
+    <!-- MACD Chart -->
+    <div class="chart-section">
+        <h2 class="section-title">MACD</h2>
+        <div class="chart-container chart-container-sm">
+            <canvas id="macdChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Sentiment Section -->
+    {% if sentiments %}
+    <div class="section">
+        <h2 class="section-title">Recent Sentiment</h2>
+        <div class="sentiment-list">
+            {% for s in sentiments %}
+            <div class="sentiment-item sentiment-{{ s.sentiment_label }}">
+                <div class="sentiment-header">
+                    <span class="sentiment-source">{{ s.source }}</span>
+                    <span class="sentiment-badge badge-{{ s.sentiment_label }}">{{ s.sentiment_label }}</span>
+                    <span class="sentiment-score">Score: {{ "%.2f"|format(s.sentiment_score) }}</span>
+                </div>
+                <p class="sentiment-headline">{{ s.headline }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const symbol = '{{ stock.symbol }}';
+        fetch(`/api/stocks/${symbol}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.ohlcv) {
+                    renderPriceChart(data.ohlcv);
+                    renderVolumeChart(data.ohlcv);
+                }
+            });
+        fetch(`/api/stocks/${symbol}/indicators`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.rsi) renderRSIChart(data.dates, data.rsi);
+                if (data.macd) renderMACDChart(data.dates, data.macd);
+            });
+    });
+</script>
+{% endblock %}

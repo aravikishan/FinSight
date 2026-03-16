@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Portfolio{% endblock %}
+
+{% block content %}
+<div class="portfolio-page">
+    <h1 class="page-title">Portfolio Management</h1>
+
+    <!-- Performance Summary -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="card-label">Total Value</div>
+            <div class="card-value">${{ "{:,.2f}".format(performance.total_value) }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="card-label">Cash Balance</div>
+            <div class="card-value">${{ "{:,.2f}".format(performance.cash_balance) }}</div>
+        </div>
+        <div class="summary-card {% if performance.total_unrealized_pnl > 0 %}card-gain{% elif performance.total_unrealized_pnl < 0 %}card-loss{% endif %}">
+            <div class="card-label">Unrealized P&amp;L</div>
+            <div class="card-value {% if performance.total_unrealized_pnl > 0 %}gain{% elif performance.total_unrealized_pnl < 0 %}loss{% endif %}">
+                ${{ "{:,.2f}".format(performance.total_unrealized_pnl) }}
+            </div>
+        </div>
+        <div class="summary-card {% if performance.total_return_pct > 0 %}card-gain{% elif performance.total_return_pct < 0 %}card-loss{% endif %}">
+            <div class="card-label">Total Return</div>
+            <div class="card-value {% if performance.total_return_pct > 0 %}gain{% elif performance.total_return_pct < 0 %}loss{% endif %}">
+                {{ performance.total_return_pct }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Form -->
+    <div class="trade-section">
+        <h2 class="section-title">Quick Trade</h2>
+        <form id="tradeForm" class="trade-form">
+            <div class="form-row">
+                <select id="tradeAction" class="form-select">
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+                <input type="text" id="tradeSymbol" class="form-input" placeholder="Symbol (e.g. AAPL)" required>
+                <input type="number" id="tradeShares" class="form-input" placeholder="Shares" min="1" step="1" required>
+                <button type="submit" class="btn btn-primary">Execute</button>
+            </div>
+            <div id="tradeResult" class="trade-result"></div>
+        </form>
+    </div>
+
+    <div class="portfolio-grid">
+        <!-- Positions Table -->
+        <div class="section">
+            <h2 class="section-title">Current Positions</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Shares</th>
+                            <th>Avg Cost</th>
+                            <th>Current</th>
+                            <th>Market Value</th>
+                            <th>P&amp;L</th>
+                            <th>P&amp;L %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pos in positions %}
+                        <tr>
+                            <td class="stock-symbol">
+                                <a href="/stock/{{ pos.symbol }}">{{ pos.symbol }}</a>
+                            </td>
+                            <td>{{ pos.shares }}</td>
+                            <td>${{ "%.2f"|format(pos.avg_cost_basis) }}</td>
+                            <td>${{ "%.2f"|format(pos.current_price) }}</td>
+                            <td>${{ "{:,.2f}".format(pos.market_value) }}</td>
+                            <td class="{% if pos.unrealized_pnl > 0 %}gain{% elif pos.unrealized_pnl < 0 %}loss{% endif %}">
+                                ${{ "{:,.2f}".format(pos.unrealized_pnl) }}
+                            </td>
+                            <td class="{% if pos.pnl_percent > 0 %}gain{% elif pos.pnl_percent < 0 %}loss{% endif %}">
+                                {{ pos.pnl_percent }}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Allocation Chart -->
+        <div class="section">
+            <h2 class="section-title">Allocation</h2>
+            <div class="chart-container chart-container-md">
+                <canvas id="allocationChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Allocation chart
+        fetch('/api/portfolio/allocation')
+            .then(r => r.json())
+            .then(data => {
+                renderAllocationChart(data);
+            });
+
+        // Trade form
+        document.getElementById('tradeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const action = document.getElementById('tradeAction').value;
+            const symbol = document.getElementById('tradeSymbol').value.toUpperCase();
+            const shares = parseInt(document.getElementById('tradeShares').value);
+            const resultDiv = document.getElementById('tradeResult');
+
+            fetch(`/api/portfolio/${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol: symbol, shares: shares })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-success">Order executed: ${action.toUpperCase()} ${shares} shares of ${symbol}</div>`;
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(err => {
+                resultDiv.innerHTML = `<div class="alert alert-error">Request failed</div>`;
+            });
+        });
+    });
+</script>
+{% endblock %}

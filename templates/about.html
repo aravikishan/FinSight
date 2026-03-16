@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <h1 class="page-title">About FinSight</h1>
+
+    <div class="about-content">
+        <div class="about-section">
+            <h2>What is FinSight?</h2>
+            <p>FinSight is a financial analytics dashboard built with Flask that provides
+            simulated stock market data visualization, technical analysis, portfolio tracking,
+            and market sentiment scoring. It demonstrates modern web application architecture
+            with realistic financial data simulation.</p>
+        </div>
+
+        <div class="about-section">
+            <h2>Features</h2>
+            <ul class="feature-list">
+                <li><strong>Market Dashboard:</strong> Real-time overview of 22 simulated stocks with top movers and sector performance.</li>
+                <li><strong>Stock Analysis:</strong> Individual stock pages with OHLCV price charts, volume analysis, and technical indicators.</li>
+                <li><strong>Technical Indicators:</strong> SMA, EMA, RSI, MACD, and Bollinger Bands computed with industry-standard formulas.</li>
+                <li><strong>Portfolio Management:</strong> Buy and sell stocks, track positions, monitor P&amp;L, and view allocation charts.</li>
+                <li><strong>Sentiment Analysis:</strong> Simulated news headlines with bull/bear scoring and confidence metrics.</li>
+                <li><strong>REST API:</strong> Full JSON API for programmatic access to all data.</li>
+            </ul>
+        </div>
+
+        <div class="about-section">
+            <h2>Technology Stack</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <strong>Backend:</strong> Python 3.11+, Flask 3.0
+                </div>
+                <div class="tech-item">
+                    <strong>Database:</strong> SQLite with SQLAlchemy ORM
+                </div>
+                <div class="tech-item">
+                    <strong>Charts:</strong> Chart.js 4.4
+                </div>
+                <div class="tech-item">
+                    <strong>Testing:</strong> pytest with fixtures
+                </div>
+                <div class="tech-item">
+                    <strong>Deployment:</strong> Docker, Gunicorn
+                </div>
+                <div class="tech-item">
+                    <strong>CI/CD:</strong> GitHub Actions
+                </div>
+            </div>
+        </div>
+
+        <div class="about-section">
+            <h2>Data Generation</h2>
+            <p>All market data is simulated using Geometric Brownian Motion (random walk with drift),
+            producing realistic OHLCV price series. Technical indicators are calculated using
+            standard financial mathematics. Sentiment data is generated from templated headlines
+            with randomized scoring.</p>
+        </div>
+
+        <div class="about-section disclaimer-section">
+            <h2>Disclaimer</h2>
+            <p>FinSight is a demonstration project. All data is simulated and does not reflect
+            actual market conditions. This application should not be used for real trading
+            or investment decisions.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
