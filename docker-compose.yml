@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  finsight:
+    build: .
+    container_name: finsight-app
+    ports:
+      - "8001:8001"
+    environment:
+      - FINSIGHT_PORT=8001
+      - FINSIGHT_DEBUG=false
+      - SECRET_KEY=change-me-in-production
+    volumes:
+      - finsight-data:/app/instance
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  finsight-data:
